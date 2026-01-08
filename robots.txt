@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://g-mai.top/sitemap.xml
