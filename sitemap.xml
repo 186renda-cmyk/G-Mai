@@ -18,19 +18,19 @@
 
     <!-- Blog Posts -->
     <url>
-        <loc>https://g-mai.top/blog/google-account-creation-guide.html</loc>
+        <loc>https://g-mai.top/blog/google-account-creation-guide</loc>
         <lastmod>2026-01-15</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://g-mai.top/blog/google-account-suspended-appeal-guide.html</loc>
+        <loc>https://g-mai.top/blog/google-account-suspended-appeal-guide</loc>
         <lastmod>2026-01-15</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://g-mai.top/blog/google-verification-code-issue-fix.html</loc>
+        <loc>https://g-mai.top/blog/google-verification-code-issue-fix</loc>
         <lastmod>2026-01-15</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
@@ -38,19 +38,19 @@
 
     <!-- Static Pages -->
     <url>
-        <loc>https://g-mai.top/trust.html</loc>
+        <loc>https://g-mai.top/trust</loc>
         <lastmod>2026-01-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://g-mai.top/refund-policy.html</loc>
+        <loc>https://g-mai.top/refund-policy</loc>
         <lastmod>2026-01-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://g-mai.top/privacy-policy.html</loc>
+        <loc>https://g-mai.top/privacy-policy</loc>
         <lastmod>2026-01-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
