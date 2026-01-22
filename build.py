@@ -99,6 +99,11 @@ def collect_blog_posts():
         time_tag = soup.find('time')
         if time_tag and time_tag.has_attr('datetime'):
             date_str = time_tag['datetime']
+        else:
+            # Fallback: Search for date pattern in text
+            date_match = re.search(r'\d{4}-\d{2}-\d{2}', content)
+            if date_match:
+                date_str = date_match.group(0)
         
         posts.append({
             'path': file_path,
@@ -113,7 +118,7 @@ def collect_blog_posts():
     posts.sort(key=lambda x: x['date'] if x['date'] else '0000-00-00', reverse=True)
     return posts
 
-def generate_schema(metadata, type='WebPage'):
+def generate_schema(metadata, type='WebPage', posts=None):
     """
     Generates JSON-LD schema based on metadata and type.
     """
@@ -145,7 +150,7 @@ def generate_schema(metadata, type='WebPage'):
     }
     schema["@graph"].append(website)
     
-    # Main Entity (BlogPosting or WebPage)
+    # Main Entity
     if type == 'BlogPosting':
         entity = {
             "@type": "BlogPosting",
@@ -164,6 +169,32 @@ def generate_schema(metadata, type='WebPage'):
             "publisher": {"@id": f"{DOMAIN}/#organization"}
         }
         schema["@graph"].append(entity)
+    elif type == 'CollectionPage':
+        entity = {
+            "@type": "CollectionPage",
+            "@id": metadata['canonical'],
+            "url": metadata['canonical'],
+            "name": metadata['title'],
+            "description": metadata['description'],
+            "isPartOf": {"@id": f"{DOMAIN}/#website"}
+        }
+        schema["@graph"].append(entity)
+        
+        # Add ItemList for CollectionPage
+        if posts:
+            item_list = {
+                "@type": "ItemList",
+                "itemListElement": []
+            }
+            for i, post in enumerate(posts):
+                item_list["itemListElement"].append({
+                    "@type": "ListItem",
+                    "position": i + 1,
+                    "url": f"{DOMAIN}{post['url']}",
+                    "name": post['title']
+                })
+            schema["@graph"].append(item_list)
+            
     else:
         # Generic WebPage
         entity = {
@@ -223,7 +254,7 @@ def generate_schema(metadata, type='WebPage'):
     
     return json.dumps(schema, ensure_ascii=False, indent=2)
 
-def update_article_head(soup, metadata, favicons, schema_type='WebPage'):
+def update_article_head(soup, metadata, favicons, schema_type='WebPage', posts=None):
     """
     Reconstructs the head section.
     """
@@ -298,7 +329,7 @@ def update_article_head(soup, metadata, favicons, schema_type='WebPage'):
         
     # Group E: Schema
     schema_script = soup.new_tag('script', type="application/ld+json")
-    schema_script.string = generate_schema(metadata, schema_type)
+    schema_script.string = generate_schema(metadata, schema_type, posts)
     head.append(schema_script)
         
     return soup
@@ -462,7 +493,7 @@ def process_static_pages(favicons, nav_for_sub, footer_for_sub):
         # 3. Clean Links
         clean_links_in_soup(soup)
         
-        write_file(file_path, str(soup))
+        write_file(file_path, soup.prettify())
 
 def main():
     print("Phase 1: Smart Extraction...")
@@ -519,7 +550,7 @@ def main():
         inject_recommendations(soup, post['path'], posts)
         
         # Save
-        write_file(post['path'], str(soup))
+        write_file(post['path'], soup.prettify())
 
     # Process Blog Index (Aggregation Page) if it exists
     blog_index_path = os.path.join(BLOG_DIR, 'index.html')
@@ -539,7 +570,7 @@ def main():
                 'zh-CN': f"{DOMAIN}/blog/"
             }
         }
-        update_article_head(soup, metadata, favicons, schema_type='CollectionPage')
+        update_article_head(soup, metadata, favicons, schema_type='CollectionPage', posts=posts)
         
         if soup.nav: soup.nav.replace_with(nav_for_sub.__copy__())
         if soup.footer: soup.footer.replace_with(footer_for_sub.__copy__())
@@ -559,7 +590,7 @@ def main():
                     card = create_card_node(soup, post)
                     grid.append(card)
         
-        write_file(blog_index_path, str(soup))
+        write_file(blog_index_path, soup.prettify())
 
     # Process other static pages in root
     process_static_pages(favicons, nav_for_sub, footer_for_sub)
@@ -580,9 +611,69 @@ def main():
     clean_links_in_soup(index_soup)
     
     # Save Index
-    write_file(INDEX_PATH, str(index_soup))
+    write_file(INDEX_PATH, index_soup.prettify())
+    
+    # Generate Sitemap
+    print("Generating Sitemap...")
+    generate_sitemap(posts)
     
     print("Build Complete.")
+
+def generate_sitemap(posts):
+    """
+    Generates sitemap.xml dynamically based on current content.
+    """
+    sitemap_path = os.path.join(ROOT_DIR, 'sitemap.xml')
+    today = datetime.date.today().isoformat()
+    
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    # Home
+    xml.append('    <!-- Home -->')
+    xml.append('    <url>')
+    xml.append(f'        <loc>{DOMAIN}/</loc>')
+    xml.append(f'        <lastmod>{today}</lastmod>')
+    xml.append('        <changefreq>daily</changefreq>')
+    xml.append('        <priority>1.0</priority>')
+    xml.append('    </url>')
+    
+    # Blog Index
+    xml.append('')
+    xml.append('    <!-- Blog Index -->')
+    xml.append('    <url>')
+    xml.append(f'        <loc>{DOMAIN}/blog/</loc>')
+    xml.append(f'        <lastmod>{today}</lastmod>')
+    xml.append('        <changefreq>daily</changefreq>')
+    xml.append('        <priority>0.9</priority>')
+    xml.append('    </url>')
+    
+    # Blog Posts
+    xml.append('')
+    xml.append('    <!-- Blog Posts -->')
+    for post in posts:
+        xml.append('    <url>')
+        xml.append(f'        <loc>{DOMAIN}{post["url"]}</loc>')
+        xml.append(f'        <lastmod>{post["date"] if post["date"] else today}</lastmod>')
+        xml.append('        <changefreq>weekly</changefreq>')
+        xml.append('        <priority>0.8</priority>')
+        xml.append('    </url>')
+        
+    # Static Pages
+    xml.append('')
+    xml.append('    <!-- Static Pages -->')
+    static_pages = ['trust', 'refund-policy', 'privacy-policy']
+    for page in static_pages:
+        xml.append('    <url>')
+        xml.append(f'        <loc>{DOMAIN}/{page}</loc>')
+        xml.append(f'        <lastmod>{today}</lastmod>')
+        xml.append('        <changefreq>monthly</changefreq>')
+        xml.append('        <priority>0.5</priority>')
+        xml.append('    </url>')
+        
+    xml.append('</urlset>')
+    
+    write_file(sitemap_path, '\n'.join(xml))
 
 if __name__ == "__main__":
     main()
