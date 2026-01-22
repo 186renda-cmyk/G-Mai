@@ -40,9 +40,31 @@ def normalize_link(url):
 def clean_links_in_soup(soup):
     """
     Normalizes all links in the given soup.
+    Adds rel="nofollow noopener noreferrer" to external links.
     """
     for a in soup.find_all('a', href=True):
+        # 1. Normalize Link
         a['href'] = normalize_link(a['href'])
+        
+        # 2. Handle External Links
+        href = a['href']
+        if href.startswith(('http://', 'https://')):
+            # Check if it is NOT internal (does not start with DOMAIN)
+            if not href.startswith(DOMAIN):
+                rel = a.get('rel', [])
+                if isinstance(rel, str):
+                    rel = rel.split()
+                
+                # Add required attributes
+                for val in ['nofollow', 'noopener', 'noreferrer']:
+                    if val not in rel:
+                        rel.append(val)
+                
+                a['rel'] = " ".join(rel) # BS4 handles list, but setting as string is also safe/explicit
+                # Actually BS4 handles list correctly for multi-valued attributes like rel.
+                # But let's keep it as list for BS4 to serialize properly or just let BS4 handle list.
+                a['rel'] = rel
+
     return soup
 
 def get_favicons(soup):

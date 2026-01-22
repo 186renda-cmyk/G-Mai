@@ -241,11 +241,15 @@ class Auditor:
                     self.external_link_sources[href].add(current_file_rel_path)
                     # Check rel attributes for external links
                     rel = a.get('rel', [])
-                    if 'noopener' not in rel:
-                         # Not a strict penalty in requirement, but good practice. 
-                         # Requirement says: Check if contains rel="nofollow" (for non-auth) or rel="noopener".
-                         # We'll just collect them for the async check phase or check here.
-                         pass
+                    if isinstance(rel, str): rel = rel.split()
+                    
+                    missing_rels = []
+                    for req in ['nofollow', 'noopener', 'noreferrer']:
+                        if req not in rel:
+                            missing_rels.append(req)
+                    
+                    if missing_rels:
+                         self.log_issue('WARN', f"In {current_file_rel_path}: External link '{href}' missing rel attributes: {', '.join(missing_rels)}", 2)
                 continue
 
             # Internal Links
@@ -352,7 +356,7 @@ class Auditor:
         inbound_counts = []
         
         for file in self.processed_files:
-            if file == 'index.html': continue # Root index is entry point
+            # if file == 'index.html': continue # Root index is entry point - Removed to show in Top Pages
             if self.config.should_ignore_file(file): continue
 
             # Normalization might be needed if processed_files has different formatting than map keys
@@ -438,6 +442,16 @@ class Auditor:
         else:
             for link, sources in sorted(self.external_link_sources.items()):
                 print(f"{Fore.BLUE}{link}{Style.RESET_ALL}")
+                # Check if this link was flagged
+                is_safe = True
+                for issue in self.issues:
+                    if link in issue['message'] and 'missing rel' in issue['message']:
+                        is_safe = False
+                        break
+                
+                status = f"{Fore.GREEN}[SAFE]{Style.RESET_ALL}" if is_safe else f"{Fore.RED}[UNSAFE]{Style.RESET_ALL}"
+                print(f"  Status: {status}")
+                
                 for src in sorted(sources):
                     print(f"  - {src}")
 
