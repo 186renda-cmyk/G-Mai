@@ -358,44 +358,56 @@ def create_card_node(soup, post):
     """
     Creates a card node for the post list.
     """
-    a = soup.new_tag('a', href=post['url'], class_="group block bg-[#111] border border-gray-800 rounded-2xl overflow-hidden hover:border-gBlue/50 transition-all duration-300 flex flex-col h-full")
+    a = soup.new_tag('a', href=post['url'], attrs={'class': "group flex flex-col h-full bg-[#111] border border-white/10 rounded-2xl overflow-hidden hover:border-gBlue/50 hover:shadow-2xl hover:shadow-gBlue/10 hover:-translate-y-1 transition-all duration-300"})
     
     # Image part
-    div_img = soup.new_tag('div', class_="h-48 bg-gradient-to-br from-gray-800 to-black relative flex items-center justify-center overflow-hidden")
-    div_overlay = soup.new_tag('div', class_="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(66,133,244,0.15),transparent)]")
-    div_img.append(div_overlay)
+    div_img = soup.new_tag('div', attrs={'class': "h-48 relative overflow-hidden bg-gray-900"})
+    div_bg = soup.new_tag('div', attrs={'class': "absolute inset-0 bg-gradient-to-br from-gray-900 to-black"})
+    div_img.append(div_bg)
     
-    icon = soup.new_tag('i', attrs={'data-lucide': "file-text", 'class': "w-16 h-16 text-white/20 group-hover:text-gBlue transition-colors transform group-hover:scale-110 duration-500"})
-    div_img.append(icon)
+    # Glow effect
+    div_glow = soup.new_tag('div', attrs={'class': "absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_120%,#4285F4,transparent_70%)]"})
+    div_img.append(div_glow)
+    
+    # Icon
+    icon_container = soup.new_tag('div', attrs={'class': "absolute inset-0 flex items-center justify-center"})
+    icon = soup.new_tag('i', attrs={'data-lucide': "file-text", 'class': "w-16 h-16 text-white/20 group-hover:text-gBlue group-hover:scale-110 transition-all duration-500"})
+    icon_container.append(icon)
+    div_img.append(icon_container)
+    
     a.append(div_img)
     
     # Content part
-    div_content = soup.new_tag('div', class_="p-6 flex-1 flex flex-col")
+    div_content = soup.new_tag('div', attrs={'class': "p-6 flex-1 flex flex-col relative"})
     
     # Date
-    div_meta = soup.new_tag('div', class_="flex items-center gap-2 mb-3")
-    dot = soup.new_tag('span', class_="w-2 h-2 rounded-full bg-gBlue")
-    span_date = soup.new_tag('span', class_="text-xs text-gray-500")
-    span_date.string = f"Article · {post['date']}"
-    div_meta.append(dot)
+    div_meta = soup.new_tag('div', attrs={'class': "flex items-center gap-2 mb-3 text-xs font-medium text-gBlue/80"})
+    span_date = soup.new_tag('span', attrs={'class': "px-2 py-1 rounded-md bg-gBlue/10 border border-gBlue/20"})
+    span_date.string = post['date'] if post['date'] else "Guide"
     div_meta.append(span_date)
     div_content.append(div_meta)
     
     # Title
-    h3 = soup.new_tag('h3', class_="text-xl font-bold text-white mb-3 group-hover:text-gBlue transition-colors leading-tight")
+    h3 = soup.new_tag('h3', attrs={'class': "text-xl font-bold text-white mb-3 group-hover:text-gBlue transition-colors leading-snug"})
     h3.string = post['title']
     div_content.append(h3)
     
     # Desc
-    p = soup.new_tag('p', class_="text-sm text-gray-400 line-clamp-3 mb-6 flex-1")
+    p = soup.new_tag('p', attrs={'class': "text-sm text-gray-400 line-clamp-2 mb-6 flex-1 leading-relaxed"})
     p.string = post['description']
     div_content.append(p)
     
     # Footer
-    div_footer = soup.new_tag('div', class_="flex items-center text-white text-sm font-bold border-t border-white/10 pt-4 mt-auto")
-    div_footer.string = "阅读指南 " # Using Chinese as per site lang
-    arrow = soup.new_tag('i', attrs={'data-lucide': "arrow-right", 'class': "w-4 h-4 ml-auto text-gray-500 group-hover:text-white transition-colors"})
-    div_footer.append(arrow)
+    div_footer = soup.new_tag('div', attrs={'class': "flex items-center justify-between pt-4 border-t border-white/5"})
+    span_read = soup.new_tag('span', attrs={'class': "text-sm font-semibold text-white group-hover:text-gBlue transition-colors"})
+    span_read.string = "阅读全文"
+    div_footer.append(span_read)
+    
+    arrow_container = soup.new_tag('div', attrs={'class': "w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-gBlue group-hover:text-white transition-all duration-300"})
+    arrow = soup.new_tag('i', attrs={'data-lucide': "arrow-right", 'class': "w-4 h-4"})
+    arrow_container.append(arrow)
+    div_footer.append(arrow_container)
+    
     div_content.append(div_footer)
     
     a.append(div_content)

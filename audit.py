@@ -29,10 +29,25 @@ class Config:
         self.base_url = None
         self.keywords = []
         self.ignore_paths = ['.git', 'node_modules', '__pycache__', '.idea', '.vscode']
-        self.ignore_urls_prefixes = ['/go/', 'javascript:', 'mailto:', '#', 'tel:']
+        self.ignore_urls_prefixes = ['javascript:', 'mailto:', '#', 'tel:']
         self.ignore_urls_domains = ['cdn-cgi']
         self.ignore_files = ['404.html']
         self.root_dir = os.getcwd()
+        self.redirects = {}
+
+    def load_redirects(self):
+        redirects_path = os.path.join(self.root_dir, '_redirects')
+        if os.path.exists(redirects_path):
+            try:
+                with open(redirects_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith('#'): continue
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            self.redirects[parts[0]] = parts[1]
+            except Exception as e:
+                print(f"{Fore.YELLOW}[WARN] Failed to parse _redirects: {e}{Style.RESET_ALL}")
 
     def load_from_index(self):
         index_path = os.path.join(self.root_dir, 'index.html')
@@ -120,6 +135,8 @@ class Auditor:
         self.issues = []
         self.internal_links_map = defaultdict(list) # target -> [sources]
         self.external_links = set()
+        self.soft_route_sources = defaultdict(set)
+        self.external_link_sources = defaultdict(set)
         self.pages_audited = 0
         self.orphans = []
         self.processed_files = set() # Store relative paths of processed files
@@ -200,6 +217,13 @@ class Auditor:
             if self.config.should_ignore_url(href):
                 continue
             
+            # Soft Routes
+            if href.startswith('/go/'):
+                self.soft_route_sources[href].add(current_file_rel_path)
+                if self.config.redirects and href not in self.config.redirects:
+                     self.log_issue('WARN', f"In {current_file_rel_path}: Soft route '{href}' not found in _redirects.", 5)
+                continue
+
             # External Links
             if href.startswith('http://') or href.startswith('https://'):
                 # Check if it matches our base URL (internal absolute link)
@@ -214,6 +238,7 @@ class Auditor:
                     self.verify_local_link(local_part, current_file_rel_path, is_absolute_url=True)
                 else:
                     self.external_links.add(href)
+                    self.external_link_sources[href].add(current_file_rel_path)
                     # Check rel attributes for external links
                     rel = a.get('rel', [])
                     if 'noopener' not in rel:
@@ -398,12 +423,32 @@ class Auditor:
         else:
             print(f"\n{Fore.GREEN}Great Job! Site is healthy.{Style.RESET_ALL}")
 
+        print(f"\n{Fore.CYAN}=== Soft Route Analysis ==={Style.RESET_ALL}")
+        if not self.soft_route_sources:
+             print("No soft routes found.")
+        else:
+            for route, sources in sorted(self.soft_route_sources.items()):
+                print(f"{Fore.YELLOW}{route}{Style.RESET_ALL}")
+                for src in sorted(sources):
+                    print(f"  - {src}")
+
+        print(f"\n{Fore.CYAN}=== External Link Sources ==={Style.RESET_ALL}")
+        if not self.external_link_sources:
+             print("No external links found.")
+        else:
+            for link, sources in sorted(self.external_link_sources.items()):
+                print(f"{Fore.BLUE}{link}{Style.RESET_ALL}")
+                for src in sorted(sources):
+                    print(f"  - {src}")
+
 # --- Main ---
 
 def main():
     config = Config()
     if not config.load_from_index():
         sys.exit(1)
+    
+    config.load_redirects()
     
     auditor = Auditor(config)
     auditor.run()
