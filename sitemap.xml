@@ -3,7 +3,7 @@
     <!-- Home -->
     <url>
         <loc>https://g-mai.top/</loc>
-        <lastmod>2026-01-22</lastmod>
+        <lastmod>2026-01-31</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
@@ -11,21 +11,33 @@
     <!-- Blog Index -->
     <url>
         <loc>https://g-mai.top/blog/</loc>
-        <lastmod>2026-01-22</lastmod>
+        <lastmod>2026-01-31</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
 
     <!-- Blog Posts -->
     <url>
-        <loc>https://g-mai.top/blog/google-account-change-region-guide</loc>
-        <lastmod>2026-01-16</lastmod>
+        <loc>https://g-mai.top/blog/google-account-suspended-appeal-guide</loc>
+        <lastmod>2026-01-31</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://g-mai.top/blog/google-account-suspended-appeal-guide</loc>
-        <lastmod>2026-01-15</lastmod>
+        <loc>https://g-mai.top/blog/google-account-region-check-guide</loc>
+        <lastmod>2026-01-31</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://g-mai.top/blog/google-account-risk-control-guide</loc>
+        <lastmod>2026-01-31</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://g-mai.top/blog/google-account-change-region-guide</loc>
+        <lastmod>2026-01-16</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
@@ -45,19 +57,19 @@
     <!-- Static Pages -->
     <url>
         <loc>https://g-mai.top/trust</loc>
-        <lastmod>2026-01-22</lastmod>
+        <lastmod>2026-01-31</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
         <loc>https://g-mai.top/refund-policy</loc>
-        <lastmod>2026-01-22</lastmod>
+        <lastmod>2026-01-31</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
         <loc>https://g-mai.top/privacy-policy</loc>
-        <lastmod>2026-01-22</lastmod>
+        <lastmod>2026-01-31</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>

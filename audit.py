@@ -28,7 +28,7 @@ class Config:
     def __init__(self):
         self.base_url = None
         self.keywords = []
-        self.ignore_paths = ['.git', 'node_modules', '__pycache__', '.idea', '.vscode']
+        self.ignore_paths = ['.git', 'node_modules', '__pycache__', '.idea', '.vscode', 'MasterTool']
         self.ignore_urls_prefixes = ['javascript:', 'mailto:', '#', 'tel:']
         self.ignore_urls_domains = ['cdn-cgi']
         self.ignore_files = ['404.html']

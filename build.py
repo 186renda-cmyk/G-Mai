@@ -369,7 +369,7 @@ def inject_recommendations(soup, current_post_path, all_posts):
     target_container = prose if prose else article
 
     # Logic: Pick 2 posts that are NOT the current one
-    recommendations = [p for p in all_posts if p['path'] != current_post_path][:2]
+    recommendations = [p for p in all_posts if p['path'] != current_post_path][:4]
     if not recommendations:
         return
 
