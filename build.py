@@ -122,10 +122,16 @@ def collect_blog_posts():
         if time_tag and time_tag.has_attr('datetime'):
             date_str = time_tag['datetime']
         else:
-            # Fallback: Search for date pattern in text
-            date_match = re.search(r'\d{4}-\d{2}-\d{2}', content)
+            # Fallback: Search for date pattern in visible text only
+            # Clone soup to avoid modifying the original structure if used elsewhere (though here it's local)
+            temp_soup = BeautifulSoup(content, 'html.parser')
+            for tag in temp_soup(['script', 'style', 'head', 'meta', 'link']):
+                tag.decompose()
+            text = temp_soup.get_text()
+            # Find all dates, take the first one found in body text which is likely the publish date
+            date_match = re.search(r'\d{4}[-/.]\d{2}[-/.]\d{2}', text)
             if date_match:
-                date_str = date_match.group(0)
+                date_str = date_match.group(0).replace('/', '-').replace('.', '-')
         
         posts.append({
             'path': file_path,

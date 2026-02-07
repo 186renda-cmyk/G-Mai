@@ -30,7 +30,7 @@ class Config:
         self.keywords = []
         self.ignore_paths = ['.git', 'node_modules', '__pycache__', '.idea', '.vscode', 'MasterTool']
         self.ignore_urls_prefixes = ['javascript:', 'mailto:', '#', 'tel:']
-        self.ignore_urls_domains = ['cdn-cgi']
+        self.ignore_urls_domains = ['cdn-cgi', 'google']
         self.ignore_files = ['404.html']
         self.root_dir = os.getcwd()
         self.redirects = {}
@@ -121,9 +121,12 @@ class Config:
         for prefix in self.ignore_urls_prefixes:
             if url.startswith(prefix):
                 return True
-        for domain in self.ignore_urls_domains:
-            if domain in url:
-                return True
+        
+        # Only check domains if it looks like an absolute URL
+        if '://' in url:
+            for domain in self.ignore_urls_domains:
+                if domain in url:
+                    return True
         return False
 
 # --- Auditor ---
